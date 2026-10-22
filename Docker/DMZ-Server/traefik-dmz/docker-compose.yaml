@@ -11,7 +11,6 @@ services:
         target: "/etc/traefik/traefik.yaml"
     container_name: "traefik-dmz"
     environment:
-      - "CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}"
       - "TZ=Asia/Dhaka"
     image: "traefik:latest"
     networks:
@@ -97,13 +96,9 @@ configs:
       certificatesResolvers:
         letsencrypt:
           acme:
-            dnsChallenge:
-              propagation:
-                delayBeforeChecks: "300"
-                disableANSChecks: "true"
-                disableChecks: "true"
-              provider: "cloudflare"
             email: "ankur7914@gmail.com"
+            httpChallenge:
+              entryPoint: "http"
             storage: "/etc/letsencrypt/acme.json"
 
       entryPoints:
@@ -122,10 +117,6 @@ configs:
           http:
             tls:
               certResolver: "letsencrypt"
-              domains:
-                - main: "ssankur.com"
-                  sans:
-                    - "*.ssankur.com"
       log:
         level: "INFO"
 
