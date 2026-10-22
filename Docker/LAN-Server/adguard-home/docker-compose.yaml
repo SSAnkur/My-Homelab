@@ -1,0 +1,19 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  adguard-home:
+    container_name: "adguard-home"
+    environment:
+      - "TZ=Asia/Dhaka"
+    image: "ssankur/adguard-home:latest"
+    networks:
+      - "ssankur"
+    ports:
+      - "10.1.1.253:53:53/tcp"
+      - "10.1.1.253:53:53/udp"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/conf:/opt/adguardhome/conf"
+      - "./mounts/work:/opt/adguardhome/work"

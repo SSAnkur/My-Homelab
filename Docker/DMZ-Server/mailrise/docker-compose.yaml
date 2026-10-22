@@ -1,0 +1,39 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  mailrise:
+    configs:
+      - source: "mailrise"
+        target: "/etc/mailrise.conf"
+    container_name: "mailrise"
+    image: "yoryan/mailrise:latest"
+    networks:
+      - "ssankur"
+    ports:
+      - "10.1.4.2:25:25/tcp"
+    restart: "on-failure"
+
+configs:
+  mailrise:
+    content: |
+      configs:
+        fileserver@mailrise.ssankur.com:
+          urls:
+            - "gotify://gotify/${GOTIFY_TOKEN_FILE_SERVER}"
+        mirotalk@mailrise.ssankur.com:
+          urls:
+            - "gotify://gotify/${GOTIFY_TOKEN_MIROTALK}"
+        pfsense@mailrise.ssankur.com:
+          urls:
+            - "gotify://gotify/${GOTIFY_TOKEN_PFSENSE}"
+        truenas@mailrise.ssankur.com:
+          urls:
+            - "gotify://gotify/${GOTIFY_TOKEN_TRUENAS}"
+      listen:
+        port: "25"
+      smtp:
+        auth:
+          basic:
+            SSAnkur: "${SMTP_PASSWORD}"

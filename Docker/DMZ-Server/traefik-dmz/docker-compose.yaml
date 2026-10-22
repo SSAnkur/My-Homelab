@@ -1,0 +1,137 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  traefik-dmz:
+    configs:
+      - source: "config"
+        target: "/etc/traefik/config.yaml"
+      - source: "traefik"
+        target: "/etc/traefik/traefik.yaml"
+    container_name: "traefik-dmz"
+    environment:
+      - "CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}"
+      - "TZ=Asia/Dhaka"
+    image: "traefik:latest"
+    networks:
+      - "ssankur"
+    ports:
+      - "10.1.4.2:80:80/tcp"
+      - "10.1.4.2:443:443/tcp"
+      - "10.1.4.2:8081:8080/tcp"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/letsencrypt:/etc/letsencrypt"
+
+configs:
+  config:
+    content: |
+      http:
+        routers:
+          files:
+            rule: "Host(`files.ssankur.com`)"
+            service: "files"
+          gitea:
+            rule: "Host(`gitea.ssankur.com`)"
+            service: "gitea"
+          gotify:
+            rule: "Host(`gotify.ssankur.com`)"
+            service: "gotify"
+          hunt:
+            rule: "Host(`hunt.ssankur.com`)"
+            service: "hunt"
+          jellyfin:
+            rule: "Host(`jellyfin.ssankur.com`)"
+            service: "jellyfin"
+          mirotalk:
+            rule: "Host(`mirotalk.ssankur.com`)"
+            service: "mirotalk"
+          openspeedtest:
+            rule: "Host(`openspeedtest.ssankur.com`)"
+            service: "openspeedtest"
+          speedtest:
+            rule: "Host(`speedtest.ssankur.com`)"
+            service: "speedtest"
+
+        services:
+          files:
+            loadBalancer:
+              servers:
+                - url: "http://pingvin-share:3000"
+          gitea:
+            loadBalancer:
+              servers:
+                - url: "http://gitea:3000"
+          gotify:
+            loadBalancer:
+              servers:
+                - url: "http://gotify:80"
+          hunt:
+            loadBalancer:
+              servers:
+                - url: "http://nginx:80"
+          jellyfin:
+            loadBalancer:
+              servers:
+                - url: "http://jellyfin:8096"
+          mirotalk:
+            loadBalancer:
+              servers:
+                - url: "https://mirotalk:3010"
+          openspeedtest:
+            loadBalancer:
+              servers:
+                - url: "https://openspeedtest:3001"
+          speedtest:
+            loadBalancer:
+              servers:
+                - url: "https://librespeed:443"
+
+  traefik:
+    content: |
+      api:
+        disableDashboardAd: "true"
+        insecure: "true"
+
+      certificatesResolvers:
+        letsencrypt:
+          acme:
+            dnsChallenge:
+              propagation:
+                delayBeforeChecks: "300"
+                disableANSChecks: "true"
+                disableChecks: "true"
+              provider: "cloudflare"
+            email: "ankur7914@gmail.com"
+            storage: "/etc/letsencrypt/acme.json"
+
+      entryPoints:
+        http:
+          address: ":80"
+          http:
+            redirections:
+              entryPoint:
+                to: "https"
+        https:
+          address: ":443"
+          asDefault: "true"
+          forwardedHeaders:
+            trustedIPs:
+              - "172.18.0.0/16"
+          http:
+            tls:
+              certResolver: "letsencrypt"
+              domains:
+                - main: "ssankur.com"
+                  sans:
+                    - "*.ssankur.com"
+      log:
+        level: "INFO"
+
+      providers:
+        file:
+          filename: "/etc/traefik/config.yaml"
+
+      serversTransport:
+        insecureSkipVerify: "true"

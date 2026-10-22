@@ -1,0 +1,49 @@
+networks:
+  ssankur:
+    external: "true"
+
+volumes:
+  Vault:
+    external: "true"
+
+services:
+  qbittorrent-vpn:
+    cap_add:
+      - "NET_ADMIN"
+    configs:
+      - source: "wg0"
+        target: "/config/wireguard/wg0.conf"
+    container_name: "qbittorrent-vpn"
+    environment:
+      - "PGID=1000"
+      - "PUID=1000"
+      - "TZ=Asia/Dhaka"
+      - "VPN_ENABLED=true"
+      - "VPN_LAN_NETWORK=10.1.1.0/24,10.5.5.1"
+      - "VPN_NAMESERVERS=1.1.1.1@853#cloudflare-dns.com"
+      - "WEBUI_PORTS=8082/tcp"
+    image: "ghcr.io/hotio/qbittorrent:latest"
+    networks:
+      - "ssankur"
+    ports:
+      - "10.1.4.2:8082:8082/tcp"
+    restart: "on-failure"
+    sysctls:
+      - "net.ipv4.conf.all.src_valid_mark=1"
+      - "net.ipv6.conf.all.disable_ipv6=1"
+    volumes:
+      - "./mounts/config:/config"
+      - "Vault:/mnt/Vault"
+
+configs:
+  wg0:
+    content: |
+      [Interface]
+      Address = 10.9.9.3/32
+      DNS = 1.1.1.1
+      PrivateKey = ${PRIVATE_KEY}
+
+      [Peer]
+      AllowedIPs = 0.0.0.0/0
+      Endpoint = ${VPN_SERVER_IP}:51820
+      PublicKey = ${PUBLIC_KEY}

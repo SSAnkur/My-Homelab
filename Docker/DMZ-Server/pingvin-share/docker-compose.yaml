@@ -1,0 +1,18 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  pingvin-share:
+    container_name: "pingvin-share"
+    environment:
+      - "PGID=1000"
+      - "PUID=1000"
+      - "TZ=Asia/Dhaka"
+    image: "stonith404/pingvin-share:latest"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/data:/opt/app/backend/data"
+      - "./mounts/img:/opt/app/frontend/public/img"

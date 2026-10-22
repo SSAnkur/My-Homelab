@@ -1,0 +1,18 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  grocy:
+    container_name: "grocy"
+    environment:
+      - "GROCY_CURRENCY=BDT"
+      - "PGID=1000"
+      - "PUID=1000"
+      - "TZ=Asia/Dhaka"
+    image: "lscr.io/linuxserver/grocy:latest"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/config:/config"

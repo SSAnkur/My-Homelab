@@ -1,0 +1,16 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  adminer:
+    container_name: "adminer"
+    environment:
+      - "ADMINER_DEFAULT_SERVER=postgres"
+      - "PGID=1000"
+      - "PUID=1000"
+      - "TZ=Asia/Dhaka"
+    image: "adminer:latest"
+    networks:
+      - "ssankur"
+    restart: "on-failure"

@@ -1,0 +1,27 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  mirotalk:
+    container_name: "mirotalk"
+    environment:
+      - "EMAIL_ALERTS_ENABLED=true"
+      - "EMAIL_FROM=ankur7914@gmail.com"
+      - "EMAIL_HOST=mailrise"
+      - "EMAIL_PASSWORD=${EMAIL_PASSWORD}"
+      - "EMAIL_PORT=25"
+      - "EMAIL_SEND_TO=mirotalk@mailrise.ssankur.com"
+      - "EMAIL_USERNAME=SSAnkur"
+      - "JWT_SECRET=${JWT_SECRET}"
+      - "PRESENTER_JOIN_FIRST=false"
+      - "PRESENTERS=Ankur"
+      - "SFU_SERVER=true"
+      - "SFU_ANNOUNCED_IP=mirotalk.ssankur.com"
+    image: "mirotalk/sfu:latest"
+    networks:
+      - "ssankur"
+    ports:
+      - "10.1.4.2:40000-40004:40000-40004/tcp"
+      - "10.1.4.2:40000-40004:40000-40004/udp"
+    restart: "on-failure"

@@ -1,0 +1,18 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  esphome:
+    container_name: "esphome"
+    environment:
+      - "ESPHOME_DASHBOARD_USE_PING=true"
+      - "PGID=1000"
+      - "PUID=1000"
+      - "TZ=Asia/Dhaka"
+    image: "ghcr.io/esphome/esphome:latest"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/config:/config"

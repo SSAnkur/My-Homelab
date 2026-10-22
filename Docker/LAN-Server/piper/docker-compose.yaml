@@ -1,0 +1,18 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  piper:
+    container_name: "piper"
+    environment:
+      - "PIPER_VOICE=en_US-hfc_male-medium"
+      - "PGID=1000"
+      - "PUID=1000"
+      - "TZ=Asia/Dhaka"
+    image: "lscr.io/linuxserver/piper:latest"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/config:/config"

@@ -1,0 +1,27 @@
+networks:
+  ssankur:
+    external: "true"
+
+volumes:
+  TrueNAS-RO-Movies:
+    external: "true"
+  TrueNAS-RO-Shows:
+    external: "true"
+
+services:
+  jellyfin:
+    container_name: "jellyfin"
+    devices:
+      - "/dev/dri:/dev/dri"
+    environment:
+      - "PGID=1000"
+      - "PUID=1000"
+      - "TZ=Asia/Dhaka"
+    image: "lscr.io/linuxserver/jellyfin:latest"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/config:/config"
+      - "TrueNAS-RO-Movies:/mnt/TrueNAS/Movies:ro"
+      - "TrueNAS-RO-Shows:/mnt/TrueNAS/Shows:ro"

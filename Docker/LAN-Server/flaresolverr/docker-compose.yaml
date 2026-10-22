@@ -1,0 +1,17 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  flaresolverr:
+    container_name: "flaresolverr"
+    environment:
+      - "PGID=1000"
+      - "PUID=1000"
+      - "TZ=Asia/Dhaka"
+    image: "flaresolverr/flaresolverr:latest"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/config:/config"

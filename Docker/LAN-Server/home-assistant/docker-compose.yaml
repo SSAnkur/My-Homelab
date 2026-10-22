@@ -1,0 +1,18 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  home-assistant:
+    container_name: "home-assistant"
+    environment:
+      - "DOCKER_MODS=ghcr.io/linuxserver/mods:homeassistant-hacs"
+      - "PGID=1000"
+      - "PUID=1000"
+      - "TZ=Asia/Dhaka"
+    image: "lscr.io/linuxserver/homeassistant:latest"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/config:/config"

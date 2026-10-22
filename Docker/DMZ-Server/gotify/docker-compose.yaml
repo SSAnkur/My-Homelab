@@ -1,0 +1,15 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  gotify:
+    container_name: "gotify"
+    environment:
+      - "TZ=Asia/Dhaka"
+    image: "gotify/server:latest"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/data:/app/data"

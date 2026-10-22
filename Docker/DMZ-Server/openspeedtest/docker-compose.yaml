@@ -1,0 +1,16 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  openspeedtest:
+    container_name: "openspeedtest"
+    environment:
+      - "SET_USER=1000"
+      - "TZ=Asia/Dhaka"
+    image: "openspeedtest/latest:latest"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/letsencrypt:/var/log/letsencrypt"

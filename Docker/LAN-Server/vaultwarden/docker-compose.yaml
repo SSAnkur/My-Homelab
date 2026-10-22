@@ -1,0 +1,15 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  vaultwarden:
+    container_name: "vaultwarden"
+    environment:
+      - "DOMAIN=https://vaultwarden.ssankur.com"
+    image: "vaultwarden/server:latest"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/data:/data"

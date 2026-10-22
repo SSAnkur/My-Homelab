@@ -1,0 +1,375 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  gatus:
+    configs:
+      - source: "config"
+        target: "/config/config.yaml"
+    container_name: "gatus"
+    environment:
+      - "TZ=Asia/Dhaka"
+    extra_hosts:
+      - "files.ssankur.com=10.1.4.2"
+      - "gitea.ssankur.com=10.1.4.2"
+      - "gotify.ssankur.com=10.1.4.2"
+      - "hunt.ssankur.com=10.1.4.2"
+      - "jellyfin.ssankur.com=10.1.4.2"
+      - "mirotalk.ssankur.com=10.1.4.2"
+      - "openspeedtest.ssankur.com=10.1.4.2"
+      - "speedtest.ssankur.com=10.1.4.2"
+    image: "ghcr.io/twin/gatus:latest"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+
+configs:
+  config:
+    content: |
+      alerting:
+        gotify:
+          server-url: "https://gotify.ssankur.com"
+          token: "${GOTIFY_TOKEN}"
+          default-alert:
+            failure-threshold: 1
+            success-threshold: 1
+            send-on-resolved: true
+
+      endpoints:
+        - name: "AdGuard Home"
+          group: "LAN-Server"
+          url: "http://adguard-home:3000"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Adminer"
+          group: "LAN-Server"
+          url: "http://adminer:8080"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Bazarr"
+          group: "LAN-Server"
+          url: "http://bazarr:6767"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Dockhand"
+          group: "LAN-Server"
+          url: "http://dockhand:3000"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Dozzle"
+          group: "LAN-Server"
+          url: "http://dozzle:8080"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Ente Postgres"
+          group: "LAN-Server"
+          url: "tcp://ente-postgres:5432"
+          conditions:
+            - "[CONNECTED] == true"
+          alerts:
+            - type: "gotify"
+        - name: "Ente Server"
+          group: "LAN-Server"
+          url: "tcp://ente-server:8080"
+          conditions:
+            - "[CONNECTED] == true"
+          alerts:
+            - type: "gotify"
+        - name: "Ente Web"
+          group: "LAN-Server"
+          url: "http://ente-web:3003"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "ESPHome"
+          group: "LAN-Server"
+          url: "http://esphome:6052"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "FlareSolverr"
+          group: "LAN-Server"
+          url: "http://flaresolverr:8191"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Gatus"
+          group: "LAN-Server"
+          url: "http://gatus:8080"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Gitea"
+          group: "DMZ-Server"
+          url: "https://gitea.ssankur.com"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Gotify"
+          group: "DMZ-Server"
+          url: "https://gotify.ssankur.com"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Grocy"
+          group: "LAN-Server"
+          url: "http://grocy"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Home Assistant"
+          group: "LAN-Server"
+          url: "http://home-assistant"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Homepage"
+          group: "LAN-Server"
+          url: "http://homepage:3000"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Immich"
+          group: "LAN-Server"
+          url: "http://immich:2283"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Immich Machine Learning"
+          group: "LAN-Server"
+          url: "http://immich-machine-learning:3003"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Immich Postgres"
+          group: "LAN-Server"
+          url: "tcp://immich-postgres:5432"
+          conditions:
+            - "[CONNECTED] == true"
+          alerts:
+            - type: "gotify"
+        - name: "Immich Valkey"
+          group: "LAN-Server"
+          url: "tcp://immich-valkey:6379"
+          conditions:
+            - "[CONNECTED] == true"
+          alerts:
+            - type: "gotify"
+        - name: "Jellyfin"
+          group: "DMZ-Server"
+          url: "https://jellyfin.ssankur.com"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "LibreSpeed"
+          group: "DMZ-Server"
+          url: "https://speedtest.ssankur.com"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+      #  - name: "Librespot"
+      #    group: "LAN-Server"
+      #    url: "icmp://librespot"
+      #    conditions:
+      #      - "[CONNECTED] == true"
+      #    alerts:
+      #      - type: "gotify"
+        - name: "LedFx"
+          group: "LAN-Server"
+          url: "http://ledfx:8888"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Mailrise"
+          group: "DMZ-Server"
+          url: "tcp://10.1.4.2:25"
+          conditions:
+            - "[CONNECTED] == true"
+          alerts:
+            - type: "gotify"
+        - name: "MiroTalk"
+          group: "DMZ-Server"
+          url: "https://mirotalk.ssankur.com"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Mosquitto"
+          group: "LAN-Server"
+          url: "tcp://mosquitto:1883"
+          conditions:
+            - "[CONNECTED] == true"
+          alerts:
+            - type: "gotify"
+        - name: "Music Assistant"
+          group: "LAN-Server"
+          url: "http://music-assistant:8095"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Nginx"
+          group: "DMZ-Server"
+          url: "https://hunt.ssankur.com"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "OpenSpeedTest"
+          group: "DMZ-Server"
+          url: "https://openspeedtest.ssankur.com"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Pingvin Share"
+          group: "DMZ-Server"
+          url: "https://files.ssankur.com"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Piper"
+          group: "LAN-Server"
+          url: "tcp://piper:10200"
+          conditions:
+            - "[CONNECTED] == true"
+          alerts:
+            - type: "gotify"
+        - name: "Prowlarr"
+          group: "LAN-Server"
+          url: "http://prowlarr:9696"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "qBittorrent"
+          group: "DMZ-Server"
+          url: "http://10.1.4.2:8080"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "qBittorrent (VPN)"
+          group: "DMZ-Server"
+          url: "http://10.1.4.2:8082"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Radarr"
+          group: "LAN-Server"
+          url: "http://radarr:7878"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Radicale"
+          group: "LAN-Server"
+          url: "http://radicale:5232"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+      #  - name: "Scream"
+      #    group: "LAN-Server"
+      #    url: "icmp://scream"
+      #    conditions:
+      #      - "[CONNECTED] == true"
+      #    alerts:
+      #      - type: "gotify"
+        - name: "Scrutiny"
+          group: "TrueNAS"
+          url: "http://10.1.1.201:8080"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+      #  - name: "Shairport Sync"
+      #    group: "LAN-Server"
+      #    url: "tcp://shairport-sync:5000"
+      #    conditions:
+      #      - "[CONNECTED] == true"
+      #    alerts:
+      #      - type: "gotify"
+        - name: "Socket Proxy"
+          group: "DMZ-Server"
+          url: "http://10.1.4.2:2375/_ping"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Sonarr"
+          group: "LAN-Server"
+          url: "http://sonarr:8989"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Traefik"
+          group: "LAN-Server"
+          url: "http://traefik:8080"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Traefik (DMZ)"
+          group: "DMZ-Server"
+          url: "http://10.1.4.2:8081"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+        - name: "Vaultwarden"
+          group: "LAN-Server"
+          url: "http://vaultwarden"
+          conditions:
+            - "[STATUS] == 200"
+          alerts:
+            - type: "gotify"
+      #  - name: "Wyoming Satellite"
+      #    group: "LAN-Server"
+      #    url: "tcp://wyoming-satellite:10700"
+      #    conditions:
+      #      - "[CONNECTED] == true"
+      #    alerts:
+      #      - type: "gotify"
+      #  - name: "Wyoming Snowboy"
+      #    group: "LAN-Server"
+      #    url: "tcp://wyoming-snowboy:10400"
+      #    conditions:
+      #      - "[CONNECTED] == true"
+      #    alerts:
+      #      - type: "gotify"
+        - name: "Wyoming Vosk"
+          group: "LAN-Server"
+          url: "tcp://wyoming-vosk:10300"
+          conditions:
+            - "[CONNECTED] == true"
+          alerts:
+            - type: "gotify"

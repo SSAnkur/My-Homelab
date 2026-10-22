@@ -1,0 +1,17 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  radicale:
+    container_name: "radicale"
+    environment:
+      - "RADICALE_CONFIG=/config/radicale.conf"
+      - "TZ=Asia/Dhaka"
+    image: "ssankur/radicale:latest"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/config:/config"
+      - "./mounts/radicale:/var/lib/radicale"

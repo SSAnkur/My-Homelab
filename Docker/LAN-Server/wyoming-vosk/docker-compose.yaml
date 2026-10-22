@@ -1,0 +1,26 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  wyoming-vosk:
+    command:
+      - "--data-dir"
+      - "/data"
+      - "--sentences-dir"
+      - "/sentences"
+      - "--correct-sentences"
+      - "--limit-sentences"
+      - "--debug"
+    container_name: "wyoming-vosk"
+    environment:
+      - "PGID=1000"
+      - "PUID=1000"
+      - "TZ=Asia/Dhaka"
+    image: "rhasspy/wyoming-vosk:latest"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/data:/data"
+      - "./mounts/sentences:/sentences"

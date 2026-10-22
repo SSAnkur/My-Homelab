@@ -1,0 +1,18 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  dozzle:
+    container_name: "dozzle"
+    environment:
+      - "DOZZLE_HOSTNAME=LAN-Server"
+      - "DOZZLE_NO_ANALYTICS=true"
+      - "DOZZLE_REMOTE_HOST=tcp://10.1.4.2:2375|DMZ-Server"
+      - "TZ=Asia/Dhaka"
+    image: "amir20/dozzle:latest"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"

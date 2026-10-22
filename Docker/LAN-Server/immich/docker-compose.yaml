@@ -1,0 +1,65 @@
+networks:
+  ssankur:
+    external: "true"
+
+volumes:
+  TrueNAS:
+    external: "true"
+
+services:
+  immich:
+    container_name: "immich"
+    depends_on:
+      immich-postgres:
+        condition: "service_healthy"
+      immich-valkey:
+        condition: "service_healthy"
+    environment:
+      - "DB_DATABASE_NAME=immich"
+      - "DB_HOSTNAME=immich-postgres"
+      - "DB_PASSWORD=${DB_PASSWORD}"
+      - "DB_USERNAME=immich"
+      - "REDIS_HOSTNAME=immich-valkey"
+      - "TZ=Asia/Dhaka"
+    image: "ghcr.io/immich-app/immich-server:release"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/data:/data"
+      - "TrueNAS:/mnt/TrueNAS"
+
+  immich-machine-learning:
+    container_name: "immich-machine-learning"
+    image: "ghcr.io/immich-app/immich-machine-learning:release"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/cache:/cache"
+
+  immich-postgres:
+    container_name: "immich-postgres"
+    image: "ghcr.io/immich-app/postgres:17-vectorchord0.4.3"
+    environment:
+      - "POSTGRES_DB=immich"
+      - "POSTGRES_INITDB_ARGS=--data-checksums"
+      - "POSTGRES_PASSWORD=${DB_PASSWORD}"
+      - "POSTGRES_USER=immich"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+    shm_size: "128mb"
+    volumes:
+      - "./mounts/postgres:/var/lib/postgresql/data"
+
+  immich-valkey:
+    container_name: "immich-valkey"
+    healthcheck:
+      test: "redis-cli ping || exit 1"
+    image: "valkey/valkey:8"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/valkey:/data"

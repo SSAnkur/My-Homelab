@@ -1,0 +1,20 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  gitea:
+    container_name: "gitea"
+    environment:
+      - "GITEA__repository__DEFAULT_PUSH_CREATE_PRIVATE=false"
+      - "GITEA__repository__ENABLE_PUSH_CREATE_ORG=true"
+      - "GITEA__repository__ENABLE_PUSH_CREATE_USER=true"
+      - "TZ=Asia/Dhaka"
+      - "USER_GID=1000"
+      - "USER_UID=1000"
+    image: "docker.gitea.com/gitea:latest"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/data:/data"

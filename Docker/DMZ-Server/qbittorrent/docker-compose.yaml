@@ -1,0 +1,44 @@
+networks:
+  ssankur:
+    external: "true"
+
+volumes:
+  TrueNAS-RW-Downloads:
+    external: "true"
+  TrueNAS-RO-Games-Setup:
+    external: "true"
+  TrueNAS-RO-Movies:
+    external: "true"
+  TrueNAS-RO-Shows:
+    external: "true"
+  TrueNAS-RO-Softwares-Operating-Systems:
+    external: "true"
+  TrueNAS-RO-Videos:
+    external: "true"
+  Vault:
+    external: "true"
+
+services:
+  qbittorrent:
+    container_name: "qbittorrent"
+    environment:
+      - "PGID=1000"
+      - "PUID=1000"
+      - "TZ=Asia/Dhaka"
+    image: "lscr.io/linuxserver/qbittorrent:latest"
+    networks:
+      - "ssankur"
+    ports:
+      - "10.1.4.2:6881:6881/tcp"
+      - "10.1.4.2:6881:6881/udp"
+      - "10.1.4.2:8080:8080/tcp"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/config:/config"
+      - "TrueNAS-RW-Downloads:/mnt/TrueNAS/Downloads"
+      - "TrueNAS-RO-Games-Setup:/mnt/TrueNAS/Games/Setup:ro"
+      - "TrueNAS-RO-Movies:/mnt/TrueNAS/Movies:ro"
+      - "TrueNAS-RO-Shows:/mnt/TrueNAS/Shows:ro"
+      - "TrueNAS-RO-Softwares-Operating-Systems:/mnt/TrueNAS/Softwares/Operating Systems:ro"
+      - "TrueNAS-RO-Videos:/mnt/TrueNAS/Videos:ro"
+      - "Vault:/mnt/Vault"

@@ -1,0 +1,22 @@
+networks:
+  ssankur:
+    external: "true"
+
+volumes:
+  TrueNAS:
+    external: "true"
+
+services:
+  radarr:
+    container_name: "radarr"
+    environment:
+      - "PGID=1000"
+      - "PUID=1000"
+      - "TZ=Asia/Dhaka"
+    image: "lscr.io/linuxserver/radarr:latest"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/config:/config"
+      - "TrueNAS:/mnt/TrueNAS"

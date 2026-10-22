@@ -1,0 +1,18 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  ledfx:
+    command:
+      - "--clear-effects"
+      - "--offline"
+    container_name: "ledfx"
+    environment:
+      - "TZ=Asia/Dhaka"
+    image: "ghcr.io/ledfx/ledfx:2.1.9"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/config:/home/ledfx/ledfx-config"

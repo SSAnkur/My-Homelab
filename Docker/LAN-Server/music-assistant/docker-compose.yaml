@@ -1,0 +1,18 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  music-assistant:
+    container_name: "music-assistant"
+    environment:
+      - "TZ=Asia/Dhaka"
+    image: "ghcr.io/music-assistant/server:latest"
+    networks:
+      - "ssankur"
+    ports:
+      - "10.1.1.253:7406:7406/tcp"
+      - "10.1.1.253:6001-6010:6001-6010/udp"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/data:/data"

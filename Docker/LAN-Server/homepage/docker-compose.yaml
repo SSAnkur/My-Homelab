@@ -1,0 +1,353 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  homepage:
+    configs:
+      - source: "bookmarks"
+        target: "/app/config/bookmarks.yaml"
+      - source: "docker"
+        target: "/app/config/docker.yaml"
+      - source: "services"
+        target: "/app/config/services.yaml"
+      - source: "settings"
+        target: "/app/config/settings.yaml"
+      - source: "widgets"
+        target: "/app/config/widgets.yaml"
+    container_name: "homepage"
+    environment:
+      - "HOMEPAGE_ALLOWED_HOSTS=*"
+      - "TZ=Asia/Dhaka"
+    image: "ghcr.io/gethomepage/homepage:latest"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/images:/app/public/images"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+configs:
+  bookmarks:
+    content: "\n"
+
+  docker:
+    content: |
+      LAN-Server:
+        socket: "/var/run/docker.sock"
+      DMZ-Server:
+        host: "10.1.4.2"
+        port: "2375"
+
+  services:
+    content: |
+      - Home Automation:
+          - ESPHome:
+              icon: "/images/esphome.png"
+              href: "https://esphome.ssankur.com"
+              server: "LAN-Server"
+              container: "esphome"
+              widget:
+                type: "esphome"
+                url: "http://esphome:6052"
+                fields: ["online", "offline", "unknown", "total"]
+          - Home Assistant:
+              icon: "/images/home-assistant.png"
+              href: "https://home-assistant.ssankur.com"
+              server: "LAN-Server"
+              container: "home-assistant"
+              widget:
+                type: "homeassistant"
+                url: "http://home-assistant"
+                key: "${HOME_ASSISTANT_KEY}"
+                custom:
+                  - template: "{{ states('sensor.lywsd03mmc_temperature', with_unit=True) }}"
+                    label: Indoor Temperature
+                  - template: "{{ states('sensor.lywsd03mmc_humidity', with_unit=True) }}"
+                    label: Indoor Humidity
+          - Music Assistant:
+              icon: "/images/music-assistant.png"
+              href: "https://music-assistant.ssankur.com"
+              server: "LAN-Server"
+              container: "music-assistant"
+          - LedFx:
+              icon: "/images/ledfx.png"
+              href: "https://ledfx.ssankur.com"
+              server: "LAN-Server"
+              container: "ledfx"
+
+      - Media:
+          - Bazarr:
+              icon: "/images/bazarr.png"
+              href: "https://bazarr.ssankur.com"
+              server: "LAN-Server"
+              container: "bazarr"
+              widget:
+                type: "bazarr"
+                url: "http://bazarr:6767"
+                key: "${BAZARR_KEY}"
+          - Immich:
+              icon: "/images/immich.png"
+              href: "https://immich.ssankur.com"
+              server: "LAN-Server"
+              container: "immich"
+              widget:
+                type: "immich"
+                url: "http://immich:2283"
+                key: "${IMMICH_KEY}"
+                version: "2"
+                fields: ["photos", "videos"]
+          - Jellyfin:
+              icon: "/images/jellyfin.png"
+              href: "https://jellyfin.ssankur.com"
+              server: "DMZ-Server"
+              container: "jellyfin"
+              widget:
+                type: "jellyfin"
+                url: "https://jellyfin.ssankur.com"
+                key: "${JELLYFIN_KEY}"
+                version: "2"
+                fields: ["movies", "series", "episodes"]
+                enableBlocks: "true"
+                enableNowPlaying: "false"
+          - Prowlarr:
+              icon: "/images/prowlarr.png"
+              href: "https://prowlarr.ssankur.com"
+              server: "LAN-Server"
+              container: "prowlarr"
+              widget:
+                type: "prowlarr"
+                url: "http://prowlarr:9696"
+                key: "${PROWLARR_KEY}"
+          - qBittorrent:
+              icon: "/images/qbittorrent.png"
+              href: "https://qbittorrent.ssankur.com"
+              server: "DMZ-Server"
+              container: "qbittorrent"
+              widget:
+                type: "qbittorrent"
+                url: "http://10.1.4.2:8080"
+                username: "SSAnkur"
+                password: "${QBITTORRENT_PASSWORD}"
+          - qBittorrent (VPN):
+              icon: "/images/qbittorrent.png"
+              href: "https://qbittorrent-vpn.ssankur.com"
+              server: "DMZ-Server"
+              container: "qbittorrent-vpn"
+              widget:
+                type: "qbittorrent"
+                url: "http://10.1.4.2:8082"
+                username: "SSAnkur"
+                password: "${QBITTORRENT_VPN_PASSWORD}"
+          - Radarr:
+              icon: "/images/radarr.png"
+              href: "https://radarr.ssankur.com"
+              server: "LAN-Server"
+              container: "radarr"
+              widget:
+                type: "radarr"
+                url: "http://radarr:7878"
+                key: "${RADARR_KEY}"
+          - Sonarr:
+              icon: "/images/sonarr.png"
+              href: "https://sonarr.ssankur.com"
+              server: "LAN-Server"
+              container: "sonarr"
+              widget:
+                type: "sonarr"
+                url: "http://sonarr:8989"
+                key: "${SONARR_KEY}"
+
+      - Monitoring & Tracking:
+          - Dockhand:
+              icon: "/images/dockhand.png"
+              href: "https://dockhand.ssankur.com"
+              server: "LAN-Server"
+              container: "dockhand"
+              widget:
+                type: "dockhand"
+                url: "http://dockhand:3000"
+                username: "SSAnkur"
+                password: "${DOCKHAND_PASSWORD}"
+                fields: ["running", "pending_updates", "total"]
+          - Gatus:
+              icon: "/images/gatus.png"
+              href: "https://gatus.ssankur.com"
+              server: "LAN-Server"
+              container: "gatus"
+              widget:
+                type: "gatus"
+                url: "http://gatus:8080"
+          - Gotify:
+              icon: "/images/gotify.png"
+              href: "https://gotify.ssankur.com"
+              server: "DMZ-Server"
+              container: "gotify"
+              widget:
+                type: "gotify"
+                url: "https://gotify.ssankur.com"
+                key: "${GOTIFY_KEY}"
+          - Scrutiny:
+              icon: "/images/scrutiny.png"
+              href: "https://scrutiny.ssankur.com"
+              widget:
+                type: "scrutiny"
+                url: "https://scrutiny.ssankur.com"
+          - Dozzle:
+              icon: "/images/dozzle.png"
+              href: "https://dozzle.ssankur.com"
+              server: "LAN-Server"
+              container: "dozzle"
+          - Grocy:
+              icon: "/images/grocy.png"
+              href: "https://grocy.ssankur.com"
+              server: "LAN-Server"
+              container: "grocy"
+
+      - Networking:
+          - AdGuard Home:
+              icon: "/images/adguard-home.png"
+              href: "https://adguard.ssankur.com"
+              server: "LAN-Server"
+              container: "adguard-home"
+              widget:
+                type: "adguard"
+                url: "http://adguard-home:3000"
+                username: "SSAnkur"
+                password: "${ADGUARD_HOME_PASSWORD}"
+          - Traefik:
+              icon: "/images/traefik.png"
+              href: "https://traefik.ssankur.com"
+              server: "LAN-Server"
+              container: "traefik"
+              widget:
+                type: "traefik"
+                url: "http://traefik:8080"
+          - Traefik (DMZ):
+              icon: "/images/traefik.png"
+              href: "https://traefik-dmz.ssankur.com"
+              server: "DMZ-Server"
+              container: "traefik-dmz"
+              widget:
+                type: "traefik"
+                url: "http://10.1.4.2:8081"
+          - OpenWrt:
+              icon: "/images/openwrt.png"
+              href: "https://openwrt.ssankur.com"
+              ping: "10.1.1.254"
+          - pfSense:
+              icon: "/images/pfsense.png"
+              href: "https://pfsense.ssankur.com"
+              ping: "10.1.1.1"
+
+      - Servers & NAS:
+          - Proxmox:
+              icon: "/images/proxmox.png"
+              href: "https://proxmox.ssankur.com"
+              ping: "10.1.1.200"
+              widget:
+                type: "proxmox"
+                url: "https://10.1.1.200:8006"
+                username: "root@pam!homepage"
+                password: "${PROXMOX_PASSWORD}"
+          - TrueNAS:
+              icon: "/images/truenas-scale.png"
+              href: "https://truenas.ssankur.com"
+              ping: "10.1.1.201"
+              widget:
+                type: "truenas"
+                url: "https://10.1.1.201"
+                username: "admin"
+                password: "${TRUENAS_PASSWORD}"
+                enablePools: "true"
+
+      - Various:
+          - Adminer:
+              icon: "/images/adminer.png"
+              href: "https://adminer.ssankur.com"
+              server: "LAN-Server"
+              container: "adminer"
+          - Ente Auth:
+              icon: "/images/ente-auth.png"
+              href: "https://ente-auth.ssankur.com"
+              server: "LAN-Server"
+              container: "ente-web"
+          - Gitea:
+              icon: "/images/gitea.png"
+              href: "https://gitea.ssankur.com"
+              server: "DMZ-Server"
+              container: "gitea"
+          - LibreSpeed:
+              icon: "/images/librespeed.png"
+              href: "https://speedtest.ssankur.com"
+              server: "DMZ-Server"
+              container: "librespeed"
+          - MiroTalk:
+              icon: "/images/mirotalk.png"
+              href: "https://mirotalk.ssankur.com"
+              server: "DMZ-Server"
+              container: "mirotalk"
+          - OpenSpeedTest:
+              icon: "/images/openspeedtest.png"
+              href: "https://openspeedtest.ssankur.com"
+              server: "DMZ-Server"
+              container: "openspeedtest"
+          - Radicale:
+              icon: "/images/radicale.png"
+              href: "https://radicale.ssankur.com"
+              server: "LAN-Server"
+              container: "radicale"
+          - SSAnkur's File Server:
+              icon: "/images/server.png"
+              href: "https://files.ssankur.com"
+              server: "DMZ-Server"
+              container: "pingvin-share"
+          - Vaultwarden:
+              icon: "/images/vaultwarden.png"
+              href: "https://vaultwarden.ssankur.com"
+              server: "LAN-Server"
+              container: "vaultwarden"
+
+  settings:
+    content: |
+      background:
+        image: "/images/background.jpg"
+        blur: "sm"
+        brightness: "50"
+        opacity: "50"
+      color: "slate"
+      disableCollapse: "true"
+      hideVersion: "true"
+      layout:
+        Home Automation:
+          style: "row"
+          columns: "4"
+        Media:
+          style: "row"
+          columns: "4"
+        Monitoring & Tracking:
+          style: "row"
+          columns: "4"
+        Networking:
+          style: "row"
+          columns: "4"
+        Servers & NAS:
+          style: "row"
+          columns: "4"
+        Various:
+          style: "row"
+          columns: "4"
+      target: "_self"
+      theme: "dark"
+      title: "Homelab Dashboard"
+
+  widgets:
+    content: |
+      - search:
+          provider: "google"
+          target: "_self"
+      - datetime:
+          text_size: "md"
+          format:
+            dateStyle: "long"
+            timeStyle: "short"

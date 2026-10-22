@@ -1,0 +1,22 @@
+networks:
+  ssankur:
+    external: "true"
+
+volumes:
+  TrueNAS:
+    external: "true"
+
+services:
+  bazarr:
+    container_name: "bazarr"
+    environment:
+      - "PGID=1000"
+      - "PUID=1000"
+      - "TZ=Asia/Dhaka"
+    image: "lscr.io/linuxserver/bazarr:latest"
+    networks:
+      - "ssankur"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/config:/config"
+      - "TrueNAS:/mnt/TrueNAS"

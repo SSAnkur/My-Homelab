@@ -1,0 +1,39 @@
+networks:
+  ssankur:
+    external: "true"
+
+services:
+  mosquitto:
+    configs:
+      - source: "mosquitto"
+        target: "/mosquitto/config/mosquitto.conf"
+        uid: "1883"
+        gid: "1883"
+        mode: 0400
+      - source: "passwd"
+        target: "/mosquitto/config/passwd"
+        uid: "1883"
+        gid: "1883"
+        mode: 0400
+    container_name: "mosquitto"
+    environment:
+      - "TZ=Asia/Dhaka"
+    image: "eclipse-mosquitto:latest"
+    networks:
+      - "ssankur"
+    ports:
+      - "10.1.1.253:1883:1883/tcp"
+    restart: "on-failure"
+    volumes:
+      - "./mounts/data:/mosquitto/data"
+      - "./mounts/log:/mosquitto/log"
+
+configs:
+  mosquitto:
+    content: |
+      listener 1883
+      allow_anonymous false
+      password_file /mosquitto/config/passwd
+  passwd:
+    content: |
+      ${PASSWD}
