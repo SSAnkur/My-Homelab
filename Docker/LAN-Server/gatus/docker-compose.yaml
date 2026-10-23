@@ -191,13 +191,6 @@ configs:
             - "[STATUS] == 200"
           alerts:
             - type: "gotify"
-      #  - name: "Librespot"
-      #    group: "LAN-Server"
-      #    url: "icmp://librespot"
-      #    conditions:
-      #      - "[CONNECTED] == true"
-      #    alerts:
-      #      - type: "gotify"
         - name: "LedFx"
           group: "LAN-Server"
           url: "http://ledfx:8888"
@@ -296,13 +289,6 @@ configs:
             - "[STATUS] == 200"
           alerts:
             - type: "gotify"
-      #  - name: "Scream"
-      #    group: "LAN-Server"
-      #    url: "icmp://scream"
-      #    conditions:
-      #      - "[CONNECTED] == true"
-      #    alerts:
-      #      - type: "gotify"
         - name: "Scrutiny"
           group: "TrueNAS"
           url: "http://10.1.1.201:8080"
@@ -310,13 +296,6 @@ configs:
             - "[STATUS] == 200"
           alerts:
             - type: "gotify"
-      #  - name: "Shairport Sync"
-      #    group: "LAN-Server"
-      #    url: "tcp://shairport-sync:5000"
-      #    conditions:
-      #      - "[CONNECTED] == true"
-      #    alerts:
-      #      - type: "gotify"
         - name: "Socket Proxy"
           group: "DMZ-Server"
           url: "http://10.1.4.2:2375/_ping"
@@ -352,20 +331,6 @@ configs:
             - "[STATUS] == 200"
           alerts:
             - type: "gotify"
-      #  - name: "Wyoming Satellite"
-      #    group: "LAN-Server"
-      #    url: "tcp://wyoming-satellite:10700"
-      #    conditions:
-      #      - "[CONNECTED] == true"
-      #    alerts:
-      #      - type: "gotify"
-      #  - name: "Wyoming Snowboy"
-      #    group: "LAN-Server"
-      #    url: "tcp://wyoming-snowboy:10400"
-      #    conditions:
-      #      - "[CONNECTED] == true"
-      #    alerts:
-      #      - type: "gotify"
         - name: "Wyoming Vosk"
           group: "LAN-Server"
           url: "tcp://wyoming-vosk:10300"
