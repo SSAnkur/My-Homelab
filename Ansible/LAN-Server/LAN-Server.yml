@@ -1,0 +1,232 @@
+- hosts: LAN-Server
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Set Hostname
+      ansible.builtin.hostname:
+        name: LAN-Server
+        use: systemd
+
+    - name: Set Timezone
+      community.general.timezone:
+        name: Asia/Dhaka
+
+    - name: Configure Passwordless sudo
+      community.general.sudoers:
+        commands: ALL
+        name: ssankur
+        user: ssankur
+
+    - name: Enable Linger For SSAnkur
+      ansible.builtin.command:
+        cmd: loginctl enable-linger ssankur
+        creates: /var/lib/systemd/linger/ssankur
+
+    - name: Copy SSH Files
+      become: false
+      ansible.builtin.copy:
+        src: .ssh
+        dest: /home/ssankur/
+        directory_mode: "0700"
+        mode: "0600"
+
+    - name: Copy Bash Files
+      become: false
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: /home/ssankur/
+        mode: "{{ item.mode }}"
+      loop:
+        - src: ../.bashrc
+          mode: "0644"
+        - src: ../.bash_history
+          mode: "0600"
+
+    - name: Copy Scripts
+      become: false
+      ansible.builtin.copy:
+        src: Scripts
+        dest: /home/ssankur/
+        mode: a+x
+
+    - name: Copy PipeWire Config Files
+      become: false
+      ansible.builtin.copy:
+        src: pipewire
+        dest: /home/ssankur/.config/
+
+    - name: Add Additional Repos & Keyrings
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      loop:
+        - src: docker.sources
+          dest: /etc/apt/sources.list.d/docker.sources
+        - src: docker.asc
+          dest: /etc/apt/keyrings/docker.asc
+        - src: ookla_speedtest-cli.sources
+          dest: /etc/apt/sources.list.d/ookla_speedtest-cli.sources
+        - src: ookla_speedtest-cli-archive-keyring.gpg
+          dest: /etc/apt/keyrings/ookla_speedtest-cli-archive-keyring.gpg
+
+    - name: Install Packages
+      ansible.builtin.apt:
+        name:
+          - alsa-utils
+          - apt-rdepends
+          - aria2
+          - autofs
+          - bat
+          - ca-certificates
+          - cifs-utils
+          - cmatrix
+          - containerd.io
+          - curl
+          - docker-buildx-plugin
+          - docker-ce
+          - docker-ce-cli
+          - docker-compose-plugin
+          - ethtool
+          - fastfetch
+          - ipcalc
+          - iperf3
+          - kitty-terminfo
+          - mediainfo
+          - moreutils
+          - ncdu
+          - net-tools
+          - nload
+          - nmap
+          - pipewire-audio
+          - pulseaudio-utils
+          - pulsemixer
+          - pv
+          - pwgen
+          - python-is-python3
+          - qemu-guest-agent
+          - rclone
+          - restic
+          - rsync
+          - shellcheck
+          - speedtest
+          - tmux
+          - traceroute
+          - tree
+          - unzip
+          - vim
+          - wakeonlan
+        update_cache: true
+
+    - name: Copy Autofs Config Files
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      loop:
+        - src: auto.extra
+          dest: /etc/auto.extra
+        - src: extra.autofs
+          dest: /etc/auto.master.d/extra.autofs
+      register: autofs_config
+
+    - name: Restart Autofs If Config Changed
+      ansible.builtin.systemd_service:
+        name: autofs
+        state: restarted
+      when: autofs_config.changed
+
+    - name: Add SSAnkur To Docker & PipeWire Group
+      ansible.builtin.user:
+        append: true
+        groups:
+          - docker
+          - pipewire
+        name: ssankur
+
+    - name: Create Docker Network
+      community.docker.docker_network:
+        appends: yes
+        name: ssankur
+
+    - name: Create Docker Volume TrueNAS
+      community.docker.docker_volume:
+        driver_options:
+          device: ":/mnt/SSAnkur/TrueNAS"
+          type: "nfs4"
+          o: "addr=10.1.1.201,vers=4.2"
+        recreate: options-changed
+        volume_name: TrueNAS
+
+    - name: Docker Login
+      become: false
+      community.docker.docker_login:
+        password: "{{ docker_pat }}"
+        username: ssankur
+
+    - name: Scan Docker Backups
+      ansible.builtin.find:
+        paths: /mnt/TrueNAS/Docker/LAN-Server
+      register: list
+
+    - name: Create Docker Directory
+      become: false
+      ansible.builtin.file:
+        path: /home/ssankur/Docker
+        state: directory
+
+    - name: Extract Docker Backups
+      ansible.builtin.unarchive:
+        creates: "/home/ssankur/Docker/{{ item.path | basename | splitext | first | splitext | first }}"
+        dest: /home/ssankur/Docker
+        remote_src: true
+        src: "{{ item.path }}"
+      loop: "{{ list.files }}"
+      loop_control:
+        label: "{{ item.path }}"
+
+    - name: Start Docker Containers
+      become: false
+      community.docker.docker_compose_v2:
+        project_src: "/home/ssankur/Docker/{{ item.path | basename | splitext | first | splitext | first }}"
+      loop: "{{ list.files }}"
+      loop_control:
+        label: "{{ item.path | basename | splitext | first | splitext | first }}"
+
+    - name: Copy Rclone Config File
+      become: false
+      ansible.builtin.copy:
+        force: false
+        src: ../../.config/rclone/rclone.conf
+        dest: .config/rclone/
+        mode: "0600"
+
+    - name: Add Cron SHELL Entry
+      ansible.builtin.cron:
+        env: true
+        job: /bin/bash
+        name: SHELL
+        user: "{{ item }}"
+      loop:
+        - root
+        - ssankur
+
+    - name: Add Cron Docker Script
+      ansible.builtin.cron:
+        job: Scripts/Docker.sh &> Scripts/Docker.sh.log
+        name: Run Docker Script At Reboot
+        special_time: reboot
+        user: ssankur
+
+    - name: Add Cron Ethtool Script
+      ansible.builtin.cron:
+        job: Scripts/Ethtool.sh
+        name: Run Ethtool Script At Reboot
+        special_time: reboot
+        user: ssankur
+
+    - name: Add Cron Restic Script
+      ansible.builtin.cron:
+        hour: 7
+        job: tmux new -d Scripts/Restic.sh
+        minute: 0
+        name: Run Restic Script At 7AM
+        user: ssankur

@@ -1,0 +1,67 @@
+- hosts: Proxmox
+  gather_facts: false
+  tasks:
+    - name: Set Hostname
+      ansible.builtin.hostname:
+        name: Proxmox
+        use: systemd
+
+    - name: Set Timezone
+      community.general.timezone:
+        name: Asia/Dhaka
+
+    - name: Copy Bash Config File
+      ansible.builtin.copy:
+        src: ../.bashrc
+        dest: /root/
+
+    - name: Clean Package Files
+      ansible.builtin.apt:
+        clean: true
+
+    - name: Update Package Cache
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Upgrade Packages
+      ansible.builtin.apt:
+        upgrade: yes
+
+    - name: Remove Unused Packages And Purge Config Files
+      ansible.builtin.apt:
+        autoremove: true
+        purge: true
+
+    - name: Check If Reboot Required
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: reboot_required
+
+    - name: Send Notification If Reboot Required
+      ansible.builtin.uri:
+        url: "https://gotify.ssankur.com/message?token={{ gotify_token }}"
+        method: POST
+        body_format: json
+        body:
+          message: Proxmox Reboot Required
+      when: reboot_required.stat.exists
+
+    - name: Add Cron SHELL Entry
+      ansible.builtin.cron:
+        env: true
+        job: /bin/bash
+        name: SHELL
+
+    - name: Add Cron PATH Entry
+      ansible.builtin.cron:
+        env: true
+        job: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+        name: PATH
+
+    - name: Add Cron Reboot Job
+      ansible.builtin.cron:
+        hour: 6
+        job: reboot
+        minute: 0
+        name: Reboot At 6 AM
+        state: absent
