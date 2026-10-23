@@ -105,7 +105,7 @@ All services are reachable at `https://<service>.ssankur.com`.
 | Category | Service | Purpose |
 | --- | --- | --- |
 | Networking | [Traefik](https://traefik.io/) | Public-facing reverse proxy |
-| | [Socket Proxy](https://docs.linuxserver.io/images/docker-socket-proxy/) | Docker API access for remote management from the LAN |
+| | [Socket Proxy](https://docs.linuxserver.io/images/docker-socket-proxy/) | Read-only Docker API access for monitoring from the LAN (Dockhand, Dozzle, Homepage, Gatus) |
 | Media | [Jellyfin](https://jellyfin.org/) | Media streaming |
 | | [qBittorrent](https://www.qbittorrent.org/) | Torrent client |
 | | qBittorrent (VPN) | Torrent client routed through a WireGuard tunnel |
@@ -189,7 +189,7 @@ Each service is a self-contained Compose project in its own folder. Persistent d
 
 - One playbook per host, one Compose project per service, one folder each.
 - Variables and secrets are kept out of the repo: `host_vars` for Ansible, `.env` for Compose.
-- All containers join a shared external Docker network named `ssankur`, so Traefik can reach them by container name.
+- All containers join a shared external Docker network named `ssankur`, so Traefik can reach them by container name. The exception is the DMZ socket proxy, which stays on Docker's default bridge so other DMZ containers can't reach the Docker API.
 - Host ports are only published where needed (Traefik, DNS, MQTT, SMTP, etc.) and are bound to the host's specific IP rather than `0.0.0.0`.
 - Small service configs are embedded inline using Compose `configs:` with `content:`, keeping each service to a single file.
 - NAS shares are attached as external NFS Docker volumes (e.g. `TrueNAS`, `Vault`, `TrueNAS-RO-Movies`), created on each host by its Ansible playbook.
