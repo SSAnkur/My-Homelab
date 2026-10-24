@@ -1,0 +1,44 @@
+bash_files:
+  - src: ../.bashrc
+    mode: "0644"
+  - src: ../.bash_history
+    mode: "0600"
+repos_group:
+  - src: docker.sources
+    dest: /etc/apt/sources.list.d/docker.sources
+  - src: docker.asc
+    dest: /etc/apt/keyrings/docker.asc
+user_groups_group:
+  - docker
+cron_jobs_group:
+  - env: true
+    job: /bin/bash
+    name: SHELL
+    user: root
+  - env: true
+    job: /bin/bash
+    name: SHELL
+    user: "{{ ansible_user }}"
+  - job: Scripts/Docker.sh &> Scripts/Docker.sh.log
+    name: Run Docker Script At Reboot
+    special_time: reboot
+    user: "{{ ansible_user }}"
+  - job: Scripts/Ethtool.sh
+    name: Run Ethtool Script At Reboot
+    special_time: reboot
+    user: "{{ ansible_user }}"
+packages_group:
+  - autofs
+  - ca-certificates
+  - cifs-utils
+  - containerd.io
+  - curl
+  - docker-buildx-plugin
+  - docker-ce
+  - docker-ce-cli
+  - docker-compose-plugin
+  - ethtool
+  - qemu-guest-agent
+  - rsync
+  - tmux
+  - traceroute

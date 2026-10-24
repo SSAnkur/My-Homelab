@@ -1,0 +1,16 @@
+- name: Copy Autofs Config Files
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+    - src: auto.extra
+      dest: /etc/auto.extra
+    - src: extra.autofs
+      dest: /etc/auto.master.d/extra.autofs
+  register: autofs_config
+
+- name: Restart Autofs If Config Changed
+  ansible.builtin.systemd_service:
+    name: autofs
+    state: restarted
+  when: autofs_config.changed

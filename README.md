@@ -119,31 +119,60 @@ All services are reachable at `https://<service>.ssankur.com`.
 
 ## Provisioning with Ansible
 
-Each host has its own playbook under `Ansible/<host>/`. They're written as plain, flat task lists (no roles yet) so a host can be rebuilt from a fresh OS install with a single run.
+Each host has its own playbook under `Ansible/<host>/`, built from a set of shared roles in `Ansible/roles/`. Each playbook lists the roles its host needs and keeps only the tasks unique to that host, so a host can still be rebuilt from a fresh OS install with a single run.
 
 | Playbook | Target | What it does |
 | --- | --- | --- |
 | `LAN-Server.yml` | LAN-Server | Base system setup, Docker, PipeWire audio, NAS mounts and volumes, restores and starts all services, rclone + Restic backups |
 | `DMZ-Server.yml` | DMZ-Server | Base system setup, Docker, NAS mounts and volumes, restores and starts all services |
 | `Cloud-Server.yml` | Cloud-Server | Base system setup, tooling, IP forwarding and the WireGuard `wg0` tunnel |
-| `Proxmox.yml` | Proxmox | Hostname, timezone and shell config, full package upgrade and cleanup, Gotify notification when a reboot is required |
+| `Proxmox.yml` | Proxmox | Hostname, timezone and shell config, cron environment, full package upgrade and cleanup, Gotify notification when a reboot is required |
+
+### Roles
+
+| Role | What it does | Used by |
+| --- | --- | --- |
+| `base` | Hostname (from the inventory name) and `Asia/Dhaka` timezone | All hosts |
+| `bash` | Shell config files copied to the user's home | All hosts |
+| `repos` | Extra apt repositories and keyrings (Docker, Ookla) | Cloud, LAN, DMZ |
+| `packages` | Installs the host's packages | Cloud, LAN, DMZ |
+| `user` | Passwordless sudo, group membership, SSH keys and helper scripts | LAN, DMZ |
+| `autofs` | autofs maps for the TrueNAS shares, restarting autofs when they change | LAN, DMZ |
+| `docker` | Shared network, NFS volumes, Docker Hub login, restoring and starting services | LAN, DMZ |
+| `cron` | Cron jobs | LAN, DMZ, Proxmox |
+
+The roles only contain tasks; everything that differs between hosts comes from variables.
+
+### Variables
+
+The inventory (`Ansible/hosts.yml`) puts LAN-Server and DMZ-Server in a `docker_hosts` group, and the roles read their values from `group_vars` and `host_vars`:
+
+| File | Holds |
+| --- | --- |
+| `group_vars/all/vars.yml` | Packages installed on every host (`packages_all`) |
+| `group_vars/docker_hosts/vars.yml` | Settings shared by both Docker hosts: shell files, the Docker repo, the `docker` group, shared cron jobs and packages |
+| `host_vars/<host>/vars.yml` | Each host's own packages, repos, groups, cron jobs and Docker volumes |
+
+Lists that are shared between levels use one variable per level (`packages_all`, `packages_group` and `packages`, for example), and the roles join them together, so a host gets the shared items plus its own.
 
 ### Rebuilding a Docker host
 
 The LAN-Server and DMZ-Server playbooks take a freshly installed Debian VM to a fully running Docker host:
 
-1. **Base system:** hostname, `Asia/Dhaka` timezone, passwordless sudo for `ssankur`, SSH keys, shell config and helper scripts. On LAN-Server, lingering is enabled for `ssankur` so the user's PipeWire session runs without a login.
+1. **Base system:** hostname, `Asia/Dhaka` timezone and shell config.
 2. **Packages:** Docker CE (with the Compose and Buildx plugins) from Docker's official apt repository, plus the usual admin tooling. LAN-Server also gets PipeWire, rclone and Restic.
-3. **Storage:** autofs is configured to mount the TrueNAS shares, and the NFS-backed Docker volumes are created against TrueNAS (`10.1.1.201`, NFS 4.2):
+3. **User setup:** passwordless sudo for `ssankur`, membership of the `docker` group (and `pipewire` on LAN-Server), SSH keys and helper scripts. This runs after the packages, because those groups only exist once Docker and PipeWire are installed.
+4. **Storage:** autofs is configured to mount the TrueNAS shares.
+5. **Docker:** the shared `ssankur` network is created, the NFS-backed Docker volumes are created against TrueNAS (`10.1.1.201`, NFS 4.2) and the host logs in to Docker Hub:
 
    | Host | Volumes |
    | --- | --- |
    | LAN-Server | `TrueNAS` |
    | DMZ-Server | `TrueNAS-RO-Games-Setup`, `TrueNAS-RO-Movies`, `TrueNAS-RO-Shows`, `TrueNAS-RO-Softwares-Operating-Systems`, `TrueNAS-RO-Videos` (read-only), `TrueNAS-RW-Downloads`, `Vault` |
 
-4. **Docker:** `ssankur` is added to the `docker` group, the shared `ssankur` network is created and the host logs in to Docker Hub.
-5. **Restore and start services:** every service backup archive in `/mnt/TrueNAS/Docker/<host>/` is extracted into `~/Docker/<service>` (skipped if that folder already exists), then each project is started with `docker compose up`. Because the archives are the backed-up service folders, the `.env` files and `mounts/` data come back with them.
-6. **Scheduled jobs:** cron runs the Docker and ethtool scripts at boot, and on LAN-Server a Restic backup runs daily at 07:00.
+6. **Restore and start services:** every service backup archive in `/mnt/TrueNAS/Docker/<host>/` is extracted into `~/Docker/<service>` (skipped if that folder already exists), then each project is started with `docker compose up`. Because the archives are the backed-up service folders, the `.env` files and `mounts/` data come back with them.
+7. **Scheduled jobs:** cron runs the Docker and ethtool scripts at boot, and on LAN-Server a Restic backup runs daily at 07:00.
+8. **LAN-Server only:** lingering is enabled for `ssankur` so the user's PipeWire session runs without a login, the PipeWire config is copied (restarting PipeWire whenever it changes) and the rclone config is put in place.
 
 ### Running a playbook
 
@@ -153,18 +182,30 @@ The playbooks need these collections:
 ansible-galaxy collection install community.general community.docker ansible.posix
 ```
 
-Then run the one for the host you want, against your inventory:
+Then run the one for the host you want from the `Ansible/` folder, where `ansible.cfg` points Ansible at the inventory and the roles:
 
 ```bash
-ansible-playbook -i <inventory> Ansible/LAN-Server/LAN-Server.yml
+cd Ansible
+ansible-playbook LAN-Server/LAN-Server.yml
 ```
 
-Besides the variables in `host_vars` (see [Secrets](#secrets)), the playbooks copy a number of local files onto the hosts: SSH keys, shell config and history, helper scripts, apt repository definitions and keyrings, autofs maps, PipeWire config, the WireGuard config and the rclone config. These aren't part of this repo, so anyone reusing the playbooks will need to provide their own or remove those tasks.
+To see what a playbook does without opening every role, `ansible-playbook --list-tasks <playbook>` lists its tasks in order, and `ansible-inventory --host <host>` shows the variables the host ends up with (including secrets, so don't share its output).
+
+Besides the variables in `group_vars` and `host_vars` (see [Secrets](#secrets)), the playbooks copy a number of local files onto the hosts: SSH keys, shell config and history, helper scripts, apt repository definitions and keyrings, autofs maps, PipeWire config, the WireGuard config and the rclone config. These aren't part of this repo, so anyone reusing the playbooks will need to provide their own or remove those tasks.
 
 ## Repository structure
 
 ```
 Ansible/
+├── ansible.cfg                 # inventory and roles path
+├── hosts.yml                   # inventory
+├── group_vars/
+│   ├── all/vars.yml
+│   └── docker_hosts/vars.yml
+├── host_vars/
+│   └── <host>/vars.yml
+├── roles/
+│   └── <role>/tasks/main.yml   # base, bash, repos, packages, user, autofs, docker, cron
 ├── LAN-Server/
 │   └── LAN-Server.yml
 ├── DMZ-Server/
@@ -183,16 +224,17 @@ Docker/
         └── docker-compose.yaml
 ```
 
-Each service is a self-contained Compose project in its own folder. Persistent data lives in a `./mounts/` directory next to each compose file, and Ansible variables live in a `host_vars/` folder; neither is part of this repo.
+Each service is a self-contained Compose project in its own folder. Persistent data lives in a `./mounts/` directory next to each compose file, and Ansible secrets live in `secrets.yml` files inside `group_vars/` and `host_vars/`; neither is part of this repo.
 
 ## Conventions
 
 - One playbook per host, one Compose project per service, one folder each.
-- Variables and secrets are kept out of the repo: `host_vars` for Ansible, `.env` for Compose.
+- Shared Ansible tasks live in roles; host-specific values live in `group_vars` and `host_vars`.
+- Secrets are kept out of the repo: `secrets.yml` for Ansible, `.env` for Compose.
 - All containers join a shared external Docker network named `ssankur`, so Traefik can reach them by container name. The exception is the DMZ socket proxy, which stays on Docker's default bridge so other DMZ containers can't reach the Docker API.
 - Host ports are only published where needed (Traefik, DNS, MQTT, SMTP, etc.) and are bound to the host's specific IP rather than `0.0.0.0`.
 - Small service configs are embedded inline using Compose `configs:` with `content:`, keeping each service to a single file.
-- NAS shares are attached as external NFS Docker volumes (e.g. `TrueNAS`, `Vault`, `TrueNAS-RO-Movies`), created on each host by its Ansible playbook.
+- NAS shares are attached as external NFS Docker volumes (e.g. `TrueNAS`, `Vault`, `TrueNAS-RO-Movies`), created on each host by the `docker` role from the volumes listed in its `host_vars`.
 - Timezone is set to `Asia/Dhaka`; LinuxServer.io images run as `PUID/PGID=1000`.
 
 ## Getting started
@@ -207,7 +249,7 @@ These files describe my environment, so IPs, domains, users and volume names wil
    ```bash
    docker network create ssankur
    ```
-2. Create any external volumes the service needs (see the `volumes:` section in its compose file, or the volume tasks in the host's playbook).
+2. Create any external volumes the service needs (see the `volumes:` section in its compose file, or `docker_volumes` in the host's `host_vars`).
 3. Provide the required secrets in a `.env` file next to the compose file (see below).
 4. Start the reverse proxy first, then the service:
    ```bash
@@ -230,14 +272,15 @@ No secrets are committed. Both halves of the repo reference them as placeholders
 | mailrise | `SMTP_PASSWORD`, `GOTIFY_TOKEN_*` |
 | homepage | API keys / passwords for each dashboard widget |
 
-**Ansible** playbooks use `{{ variable }}` placeholders, loaded from a `host_vars/` folder that holds a separate variables file for each host, named after the host (`LAN-Server`, `DMZ-Server`, `Proxmox`, …):
+**Ansible** playbooks use `{{ variable }}` placeholders. The secret values live in `secrets.yml` files next to the `vars.yml` files, which Ansible loads automatically. They only exist on the machine that runs the playbooks:
 
-| Playbook | Variables |
+| File | Variables |
 | --- | --- |
-| LAN-Server, DMZ-Server | `docker_pat` (Docker Hub personal access token) |
-| Proxmox | `gotify_token` (for the reboot-required notification) |
+| `group_vars/docker_hosts/secrets.yml` | `ansible_password`, `ansible_become_password` |
+| `host_vars/LAN-Server/secrets.yml`, `host_vars/DMZ-Server/secrets.yml` | `docker_pat` (Docker Hub personal access token) |
+| `host_vars/Proxmox/secrets.yml` | `gotify_token` (for the reboot-required notification) |
 
-`.env` files, `host_vars/` and `mounts/` data are never on my desktop or in this repo (see [Workflow](#workflow)).
+`.env` files, Ansible `secrets.yml` files and `mounts/` data are never on my desktop or in this repo (see [Workflow](#workflow)).
 
 ## Workflow
 
@@ -261,6 +304,7 @@ The goal is to manage the whole lab as code, from the VMs up to the apps:
 ### Status / to do
 
 - [x] **Ansible:** upload server provisioning playbooks
+- [x] **Ansible:** refactor the playbooks into shared roles with `group_vars` and `host_vars`
 - [ ] **GitOps (Ansible):** playbooks applied automatically from this repo
 - [ ] **GitOps (Compose):** servers pulling and deploying from this repo automatically
 - [ ] **Terraform:** define the Proxmox VM configurations as code

@@ -1,0 +1,49 @@
+- name: Create Docker Network
+  community.docker.docker_network:
+    appends: true
+    name: ssankur
+
+- name: Create Docker Volumes
+  community.docker.docker_volume:
+    driver_options:
+      device: "{{ item.device }}"
+      type: "nfs4"
+      o: "{{ item.o }}"
+    recreate: options-changed
+    volume_name: "{{ item.volume_name }}"
+  loop: "{{ docker_volumes }}"
+
+- name: Docker Login
+  become: false
+  community.docker.docker_login:
+    password: "{{ docker_pat }}"
+    username: ssankur
+
+- name: Scan Docker Backups
+  ansible.builtin.find:
+    paths: "/mnt/TrueNAS/Docker/{{ inventory_hostname }}"
+  register: docker_backups
+
+- name: Create Docker Directory
+  become: false
+  ansible.builtin.file:
+    path: "/home/{{ ansible_user }}/Docker"
+    state: directory
+
+- name: Extract Docker Backups
+  ansible.builtin.unarchive:
+    creates: "/home/{{ ansible_user }}/Docker/{{ item.path | basename | splitext | first | splitext | first }}"
+    dest: "/home/{{ ansible_user }}/Docker"
+    remote_src: true
+    src: "{{ item.path }}"
+  loop: "{{ docker_backups.files }}"
+  loop_control:
+    label: "{{ item.path }}"
+
+- name: Start Docker Containers
+  become: false
+  community.docker.docker_compose_v2:
+    project_src: "/home/{{ ansible_user }}/Docker/{{ item.path | basename | splitext | first | splitext | first }}"
+  loop: "{{ docker_backups.files }}"
+  loop_control:
+    label: "{{ item.path | basename | splitext | first | splitext | first }}"

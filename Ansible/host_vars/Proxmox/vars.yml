@@ -1,0 +1,14 @@
+bash_files:
+  - src: ../.bashrc
+cron_jobs:
+  - env: true
+    job: /bin/bash
+    name: SHELL
+  - env: true
+    job: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    name: PATH
+  - hour: 6
+    job: reboot
+    minute: 0
+    name: Reboot At 6 AM
+    state: absent

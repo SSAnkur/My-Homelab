@@ -1,65 +1,24 @@
-- hosts: Cloud-Server
+- name: Configure Cloud Server
+  hosts: Cloud-Server
   become: true
   gather_facts: false
+  roles:
+    - base
+    - bash
+    - repos
+    - packages
   tasks:
-    - name: Set Hostname
-      ansible.builtin.hostname:
-        name: Cloud-Server
-        use: systemd
-
-    - name: Set Timezone
-      community.general.timezone:
-        name: Asia/Dhaka
-
-    - name: Copy Bash Config File
-      become: false
-      ansible.builtin.copy:
-        src: ../.bashrc
-        dest: /home/debian/
-        mode: "0644"
-
     - name: Enable IP Forwarding
       ansible.posix.sysctl:
         name: net.ipv4.ip_forward
         value: 1
         reload: true
 
-    - name: Add Additional Repos & Keyrings
-      ansible.builtin.copy:
-        src: "{{ item.src }}"
-        dest: "{{ item.dest }}"
-      loop:
-        - src: ookla_speedtest-cli.sources
-          dest: /etc/apt/sources.list.d/ookla_speedtest-cli.sources
-        - src: ookla_speedtest-cli-archive-keyring.gpg
-          dest: /etc/apt/keyrings/ookla_speedtest-cli-archive-keyring.gpg
-
-    - name: Install Packages
-      ansible.builtin.apt:
-        name:
-          - apt-transport-https
-          - aria2
-          - bat
-          - cmatrix
-          - fastfetch
-          - iftop
-          - iperf3
-          - kitty-terminfo
-          - moreutils
-          - net-tools
-          - nload
-          - nmap
-          - pv
-          - shellcheck
-          - speedtest
-          - tree
-          - wireguard
-        update_cache: true
-
     - name: Copy WireGuard Config File
       ansible.builtin.copy:
         src: wg0.conf
         dest: /etc/wireguard/wg0.conf
+        mode: "0600"
       register: wireguard_config
 
     - name: Enable WireGuard Service

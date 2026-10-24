@@ -1,0 +1,15 @@
+bash_files:
+  - src: ../.bashrc
+    mode: "0644"
+repos:
+  - src: ookla_speedtest-cli.sources
+    dest: /etc/apt/sources.list.d/ookla_speedtest-cli.sources
+  - src: ookla_speedtest-cli-archive-keyring.gpg
+    dest: /etc/apt/keyrings/ookla_speedtest-cli-archive-keyring.gpg
+packages:
+  - apt-transport-https
+  - aria2
+  - iftop
+  - nload
+  - speedtest
+  - wireguard

@@ -1,0 +1,26 @@
+- name: Configure Passwordless sudo
+  community.general.sudoers:
+    commands: ALL
+    name: "{{ ansible_user }}"
+    user: "{{ ansible_user }}"
+
+- name: Add User To Groups
+  ansible.builtin.user:
+    append: true
+    groups: "{{ user_groups_group | default([]) + user_groups | default([]) }}"
+    name: "{{ ansible_user }}"
+
+- name: Copy SSH Files
+  become: false
+  ansible.builtin.copy:
+    src: .ssh
+    dest: "/home/{{ ansible_user }}/"
+    directory_mode: "0700"
+    mode: "0600"
+
+- name: Copy Scripts
+  become: false
+  ansible.builtin.copy:
+    src: Scripts
+    dest: "/home/{{ ansible_user }}/"
+    mode: a+x

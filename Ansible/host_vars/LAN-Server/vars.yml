@@ -1,0 +1,36 @@
+repos:
+  - src: ookla_speedtest-cli.sources
+    dest: /etc/apt/sources.list.d/ookla_speedtest-cli.sources
+  - src: ookla_speedtest-cli-archive-keyring.gpg
+    dest: /etc/apt/keyrings/ookla_speedtest-cli-archive-keyring.gpg
+user_groups:
+  - pipewire
+cron_jobs:
+  - hour: 7
+    job: tmux new -d Scripts/Restic.sh
+    minute: 0
+    name: Run Restic Script At 7AM
+    user: "{{ ansible_user }}"
+docker_volumes:
+  - device: ":/mnt/SSAnkur/TrueNAS"
+    o: "addr=10.1.1.201,vers=4.2"
+    volume_name: TrueNAS
+packages:
+  - alsa-utils
+  - apt-rdepends
+  - aria2
+  - ipcalc
+  - mediainfo
+  - ncdu
+  - nload
+  - pipewire-audio
+  - pulseaudio-utils
+  - pulsemixer
+  - pwgen
+  - python-is-python3
+  - rclone
+  - restic
+  - speedtest
+  - unzip
+  - vim
+  - wakeonlan

@@ -1,0 +1,12 @@
+packages_all:
+  - bat
+  - cmatrix
+  - fastfetch
+  - iperf3
+  - kitty-terminfo
+  - moreutils
+  - net-tools
+  - nmap
+  - pv
+  - shellcheck
+  - tree

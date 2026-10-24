@@ -1,0 +1,11 @@
+- name: Add Cron Jobs
+  ansible.builtin.cron:
+    env: "{{ item.env | default(omit) }}"
+    hour: "{{ item.hour | default(omit) }}"
+    job: "{{ item.job }}"
+    minute: "{{ item.minute | default(omit) }}"
+    name: "{{ item.name }}"
+    special_time: "{{ item.special_time | default(omit) }}"
+    state: "{{ item.state | default(omit) }}"
+    user: "{{ item.user | default(omit) }}"
+  loop: "{{ cron_jobs_group | default([]) + cron_jobs | default([]) }}"

@@ -1,0 +1,4 @@
+- name: Install Packages
+  ansible.builtin.apt:
+    name: "{{ packages_all + packages_group | default([]) + packages | default([]) }}"
+    update_cache: true

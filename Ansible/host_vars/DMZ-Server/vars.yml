@@ -1,0 +1,24 @@
+docker_volumes:
+  - device: ":/mnt/SSAnkur/TrueNAS/Games/Setup"
+    o: "addr=10.1.1.201,vers=4.2,ro"
+    volume_name: TrueNAS-RO-Games-Setup
+  - device: ":/mnt/SSAnkur/TrueNAS/Movies"
+    o: "addr=10.1.1.201,vers=4.2,ro"
+    volume_name: TrueNAS-RO-Movies
+  - device: ":/mnt/SSAnkur/TrueNAS/Shows"
+    o: "addr=10.1.1.201,vers=4.2,ro"
+    volume_name: TrueNAS-RO-Shows
+  - device: ":/mnt/SSAnkur/TrueNAS/Softwares/Operating Systems"
+    o: "addr=10.1.1.201,vers=4.2,ro"
+    volume_name: TrueNAS-RO-Softwares-Operating-Systems
+  - device: ":/mnt/SSAnkur/TrueNAS/Videos"
+    o: "addr=10.1.1.201,vers=4.2,ro"
+    volume_name: TrueNAS-RO-Videos
+  - device: ":/mnt/SSAnkur/TrueNAS/Downloads"
+    o: "addr=10.1.1.201,vers=4.2"
+    volume_name: TrueNAS-RW-Downloads
+  - device: ":/mnt/SSAnkur/Vault"
+    o: "addr=10.1.1.201,vers=4.2"
+    volume_name: Vault
+packages:
+  - intel-gpu-tools
