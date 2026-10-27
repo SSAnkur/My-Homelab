@@ -65,16 +65,77 @@ configs:
                     label: Indoor Temperature
                   - template: "{{ states('sensor.lywsd03mmc_humidity', with_unit=True) }}"
                     label: Indoor Humidity
-          - Music Assistant:
-              icon: "/images/music-assistant.png"
-              href: "https://music-assistant.ssankur.com"
-              server: "LAN-Server"
-              container: "music-assistant"
           - LedFx:
               icon: "/images/ledfx.png"
               href: "https://ledfx.ssankur.com"
               server: "LAN-Server"
               container: "ledfx"
+              showStats: "true"
+          - Music Assistant:
+              icon: "/images/music-assistant.png"
+              href: "https://music-assistant.ssankur.com"
+              server: "LAN-Server"
+              container: "music-assistant"
+              showStats: "true"
+
+      - Infrastructure:
+          - AdGuard Home:
+              icon: "/images/adguard-home.png"
+              href: "https://adguard.ssankur.com"
+              server: "LAN-Server"
+              container: "adguard-home"
+              widget:
+                type: "adguard"
+                url: "http://adguard-home:3000"
+                username: "SSAnkur"
+                password: "${ADGUARD_HOME_PASSWORD}"
+          - OpenWrt:
+              icon: "/images/openwrt.png"
+              href: "https://openwrt.ssankur.com"
+              ping: "10.1.1.254"
+              widget:
+                type: "openwrt"
+                url: "https://10.1.1.254"
+                username: "root"
+                password: "${OPENWRT_PASSWORD}"
+          - Proxmox:
+              icon: "/images/proxmox.png"
+              href: "https://proxmox.ssankur.com"
+              ping: "10.1.1.200"
+              widget:
+                type: "proxmox"
+                url: "https://10.1.1.200:8006"
+                username: "root@pam!homepage"
+                password: "${PROXMOX_PASSWORD}"
+          - Traefik:
+              icon: "/images/traefik.png"
+              href: "https://traefik.ssankur.com"
+              server: "LAN-Server"
+              container: "traefik"
+              widget:
+                type: "traefik"
+                url: "http://traefik:8080"
+          - Traefik (DMZ):
+              icon: "/images/traefik.png"
+              href: "https://traefik-dmz.ssankur.com"
+              server: "DMZ-Server"
+              container: "traefik-dmz"
+              widget:
+                type: "traefik"
+                url: "http://10.1.4.2:8081"
+          - TrueNAS:
+              icon: "/images/truenas-scale.png"
+              href: "https://truenas.ssankur.com"
+              ping: "10.1.1.201"
+              widget:
+                type: "truenas"
+                url: "https://10.1.1.201"
+                version: "2"
+                key: "${TRUENAS_KEY}"
+          - pfSense:
+              icon: "/images/pfsense.png"
+              href: "https://pfsense.ssankur.com"
+              ping: "10.1.1.1"
 
       - Media:
           - Bazarr:
@@ -158,7 +219,7 @@ configs:
                 url: "http://sonarr:8989"
                 key: "${SONARR_KEY}"
 
-      - Monitoring & Tracking:
+      - Monitoring & Admin:
           - Dockhand:
               icon: "/images/dockhand.png"
               href: "https://dockhand.ssankur.com"
@@ -193,120 +254,78 @@ configs:
               widget:
                 type: "scrutiny"
                 url: "https://scrutiny.ssankur.com"
-          - Dozzle:
-              icon: "/images/dozzle.png"
-              href: "https://dozzle.ssankur.com"
-              server: "LAN-Server"
-              container: "dozzle"
-          - Grocy:
-              icon: "/images/grocy.png"
-              href: "https://grocy.ssankur.com"
-              server: "LAN-Server"
-              container: "grocy"
-
-      - Networking:
-          - AdGuard Home:
-              icon: "/images/adguard-home.png"
-              href: "https://adguard.ssankur.com"
-              server: "LAN-Server"
-              container: "adguard-home"
-              widget:
-                type: "adguard"
-                url: "http://adguard-home:3000"
-                username: "SSAnkur"
-                password: "${ADGUARD_HOME_PASSWORD}"
-          - Traefik:
-              icon: "/images/traefik.png"
-              href: "https://traefik.ssankur.com"
-              server: "LAN-Server"
-              container: "traefik"
-              widget:
-                type: "traefik"
-                url: "http://traefik:8080"
-          - Traefik (DMZ):
-              icon: "/images/traefik.png"
-              href: "https://traefik-dmz.ssankur.com"
-              server: "DMZ-Server"
-              container: "traefik-dmz"
-              widget:
-                type: "traefik"
-                url: "http://10.1.4.2:8081"
-          - OpenWrt:
-              icon: "/images/openwrt.png"
-              href: "https://openwrt.ssankur.com"
-              ping: "10.1.1.254"
-          - pfSense:
-              icon: "/images/pfsense.png"
-              href: "https://pfsense.ssankur.com"
-              ping: "10.1.1.1"
-
-      - Servers & NAS:
-          - Proxmox:
-              icon: "/images/proxmox.png"
-              href: "https://proxmox.ssankur.com"
-              ping: "10.1.1.200"
-              widget:
-                type: "proxmox"
-                url: "https://10.1.1.200:8006"
-                username: "root@pam!homepage"
-                password: "${PROXMOX_PASSWORD}"
-          - TrueNAS:
-              icon: "/images/truenas-scale.png"
-              href: "https://truenas.ssankur.com"
-              ping: "10.1.1.201"
-              widget:
-                type: "truenas"
-                url: "https://10.1.1.201"
-                username: "admin"
-                password: "${TRUENAS_PASSWORD}"
-                enablePools: "true"
-
-      - Various:
           - Adminer:
               icon: "/images/adminer.png"
               href: "https://adminer.ssankur.com"
               server: "LAN-Server"
               container: "adminer"
-          - Ente Auth:
-              icon: "/images/ente-auth.png"
-              href: "https://ente-auth.ssankur.com"
+              showStats: "true"
+          - Dozzle:
+              icon: "/images/dozzle.png"
+              href: "https://dozzle.ssankur.com"
               server: "LAN-Server"
-              container: "ente-web"
-          - Gitea:
-              icon: "/images/gitea.png"
-              href: "https://gitea.ssankur.com"
-              server: "DMZ-Server"
-              container: "gitea"
+              container: "dozzle"
+              showStats: "true"
           - LibreSpeed:
               icon: "/images/librespeed.png"
               href: "https://speedtest.ssankur.com"
               server: "DMZ-Server"
               container: "librespeed"
-          - MiroTalk:
-              icon: "/images/mirotalk.png"
-              href: "https://mirotalk.ssankur.com"
-              server: "DMZ-Server"
-              container: "mirotalk"
+              showStats: "true"
           - OpenSpeedTest:
               icon: "/images/openspeedtest.png"
               href: "https://openspeedtest.ssankur.com"
               server: "DMZ-Server"
               container: "openspeedtest"
+              showStats: "true"
+
+      - Personal:
+          - Ente Auth:
+              icon: "/images/ente-auth.png"
+              href: "https://ente-auth.ssankur.com"
+              server: "LAN-Server"
+              container: "ente-web"
+              showStats: "true"
+          - Gitea:
+              icon: "/images/gitea.png"
+              href: "https://gitea.ssankur.com"
+              server: "DMZ-Server"
+              container: "gitea"
+              widget:
+                type: "gitea"
+                url: "https://gitea.ssankur.com"
+                key: "${GITEA_KEY}"
+                fields: ["notifications", "pulls", "repositories"]
+          - Grocy:
+              icon: "/images/grocy.png"
+              href: "https://grocy.ssankur.com"
+              server: "LAN-Server"
+              container: "grocy"
+              showStats: "true"
+          - MiroTalk:
+              icon: "/images/mirotalk.png"
+              href: "https://mirotalk.ssankur.com"
+              server: "DMZ-Server"
+              container: "mirotalk"
+              showStats: "true"
           - Radicale:
               icon: "/images/radicale.png"
               href: "https://radicale.ssankur.com"
               server: "LAN-Server"
               container: "radicale"
+              showStats: "true"
           - SSAnkur's File Server:
               icon: "/images/server.png"
               href: "https://files.ssankur.com"
               server: "DMZ-Server"
               container: "pingvin-share"
+              showStats: "true"
           - Vaultwarden:
               icon: "/images/vaultwarden.png"
               href: "https://vaultwarden.ssankur.com"
               server: "LAN-Server"
               container: "vaultwarden"
+              showStats: "true"
 
   settings:
     content: |
@@ -315,6 +334,9 @@ configs:
         blur: "sm"
         brightness: "50"
         opacity: "50"
+      base: "https://homepage.ssankur.com"
+      blockStyle: "refined"
+      cardStyle: "hairline"
       color: "slate"
       disableCollapse: "true"
       hideVersion: "true"
@@ -322,19 +344,16 @@ configs:
         Home Automation:
           style: "row"
           columns: "4"
+        Infrastructure:
+          style: "row"
+          columns: "4"
         Media:
           style: "row"
           columns: "4"
-        Monitoring & Tracking:
+        Monitoring & Admin:
           style: "row"
           columns: "4"
-        Networking:
-          style: "row"
-          columns: "4"
-        Servers & NAS:
-          style: "row"
-          columns: "4"
-        Various:
+        Personal:
           style: "row"
           columns: "4"
       target: "_self"
@@ -343,11 +362,8 @@ configs:
 
   widgets:
     content: |
-      - search:
-          provider: "google"
-          target: "_self"
       - datetime:
-          text_size: "md"
+          text_size: "xl"
           format:
             dateStyle: "long"
             timeStyle: "short"
