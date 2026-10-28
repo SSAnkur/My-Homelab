@@ -364,6 +364,7 @@ configs:
       target: "_self"
       theme: "dark"
       title: "Homelab Dashboard"
+      useEqualHeights: "true"
 
   widgets:
     content: |
