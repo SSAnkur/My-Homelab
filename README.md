@@ -13,12 +13,12 @@ Ansible playbooks and Docker Compose configurations for my self-hosted homelab: 
 
 ## Architecture
 
-The lab is built on a Proxmox host. Everything except the access point runs as a VM on it: pfSense (routing and firewall), TrueNAS (storage), and the two Docker hosts, LAN-Server and DMZ-Server. An OpenWrt device serves purely as a wireless access point and managed switch. Outside the house, a small cloud VPS runs WireGuard.
+The lab is built on a Proxmox host. Everything except the access point runs as a VM on it: OPNsense (routing and firewall), TrueNAS (storage), and the two Docker hosts, LAN-Server and DMZ-Server. An OpenWrt device serves purely as a wireless access point and managed switch. Outside the house, a small cloud VPS runs WireGuard.
 
 | Component | Runs as | Role |
 | --- | --- | --- |
 | **Proxmox** | Bare metal | Hypervisor |
-| **pfSense** | Proxmox VM | Router, firewall, network segmentation |
+| **OPNsense** | Proxmox VM | Router, firewall, network segmentation |
 | **TrueNAS** | Proxmox VM | Storage, NAS shares for Docker volumes and backups |
 | **LAN-Server** | Proxmox VM | Docker host for internal services |
 | **DMZ-Server** | Proxmox VM | Docker host for internet-facing services |
@@ -27,7 +27,7 @@ The lab is built on a Proxmox host. Everything except the access point runs as a
 
 ### Network
 
-pfSense segments the network into four VLANs:
+OPNsense segments the network into four VLANs:
 
 | VLAN | Name | Purpose |
 | --- | --- | --- |
@@ -47,7 +47,7 @@ Docker workloads are split across two VMs, one in the LAN VLAN and one in the DM
 
 ```mermaid
 flowchart LR
-    Internet((Internet)) --> FW[pfSense]
+    Internet((Internet)) --> FW[OPNsense]
     FW --> DMZ
     FW --> LAN
 
@@ -59,7 +59,7 @@ flowchart LR
         TL[Traefik LAN<br/>Cloudflare DNS-01 wildcard] --> LS[Home Assistant · Immich · Vaultwarden<br/>*arr stack · AdGuard Home · Homepage]
     end
 
-    TL -. proxies .-> PVE[Proxmox / TrueNAS / pfSense / OpenWrt]
+    TL -. proxies .-> PVE[Proxmox / TrueNAS / OPNsense / OpenWrt]
     TL -. proxies .-> DMZ
     LAN --> NAS[(TrueNAS volumes)]
     DMZ --> NAS
@@ -67,7 +67,7 @@ flowchart LR
 
 All services are reachable at `https://<service>.ssankur.com`.
 
-- **LAN Traefik** obtains a wildcard `*.ssankur.com` certificate via the Cloudflare DNS-01 challenge, so internal services get valid TLS without being publicly reachable. It also proxies the infrastructure UIs (Proxmox, TrueNAS, pfSense, OpenWrt, Scrutiny) and the DMZ-hosted admin UIs.
+- **LAN Traefik** obtains a wildcard `*.ssankur.com` certificate via the Cloudflare DNS-01 challenge, so internal services get valid TLS without being publicly reachable. It also proxies the infrastructure UIs (Proxmox, TrueNAS, OPNsense, OpenWrt, Scrutiny) and the DMZ-hosted admin UIs.
 - **DMZ Traefik** uses the HTTP-01 challenge and only routes the services meant to be public.
 - Routing is defined with Traefik's **file provider** (inline in each `docker-compose.yaml` via Compose `configs`) rather than container labels, so each proxy's routing table lives in one place.
 
@@ -114,7 +114,7 @@ All services are reachable at `https://<service>.ssankur.com`.
 | | [MiroTalk SFU](https://github.com/miroslavpejic85/mirotalksfu) | Video conferencing |
 | | [Nginx](https://nginx.org/) | Static site hosting |
 | Notifications | [Gotify](https://gotify.net/) | Push notifications |
-| | [Mailrise](https://github.com/YoRyan/mailrise) | SMTP-to-Gotify bridge for devices that only send email alerts (pfSense, TrueNAS, …) |
+| | [Mailrise](https://github.com/YoRyan/mailrise) | SMTP-to-Gotify bridge for devices that only send email alerts (TrueNAS, …) |
 | Speed tests | [LibreSpeed](https://github.com/librespeed/speedtest) / [OpenSpeedTest](https://openspeedtest.com/) | Network speed testing |
 
 ## Provisioning with Ansible
@@ -310,7 +310,7 @@ The goal is to manage the whole lab as code, from the VMs up to the apps:
 - [ ] **Terraform:** define the Proxmox VM configurations as code
 - [ ] **k3s:** set up the cluster and migrate stateless services to it
 - [ ] **Flux / Argo CD:** GitOps deployments for the k3s cluster
-- [ ] Documentation for the Proxmox, TrueNAS, pfSense and OpenWrt side of the lab
+- [ ] Documentation for the Proxmox, TrueNAS, OPNsense and OpenWrt side of the lab
 - [ ] Network diagram and firewall rules between the VLANs
 - [ ] Backup and restore notes
 

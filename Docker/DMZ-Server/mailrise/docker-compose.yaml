@@ -25,9 +25,6 @@ configs:
         mirotalk@mailrise.ssankur.com:
           urls:
             - "gotify://gotify/${GOTIFY_TOKEN_MIROTALK}"
-        pfsense@mailrise.ssankur.com:
-          urls:
-            - "gotify://gotify/${GOTIFY_TOKEN_PFSENSE}"
         truenas@mailrise.ssankur.com:
           urls:
             - "gotify://gotify/${GOTIFY_TOKEN_TRUENAS}"

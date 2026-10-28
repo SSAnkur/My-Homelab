@@ -98,6 +98,15 @@ configs:
                 url: "https://10.1.1.254"
                 username: "root"
                 password: "${OPENWRT_PASSWORD}"
+          - OPNsense:
+              icon: "/images/opnsense.png"
+              href: "https://opnsense.ssankur.com"
+              ping: "10.1.1.1"
+              widget:
+                type: "opnsense"
+                url:  "https://10.1.1.1"
+                username: "${OPNSENSE_USERNAME}"
+                password: "${OPNSENSE_PASSWORD}"
           - Proxmox:
               icon: "/images/proxmox.png"
               href: "https://proxmox.ssankur.com"
@@ -132,10 +141,6 @@ configs:
                 url: "https://10.1.1.201"
                 version: "2"
                 key: "${TRUENAS_KEY}"
-          - pfSense:
-              icon: "/images/pfsense.png"
-              href: "https://pfsense.ssankur.com"
-              ping: "10.1.1.1"
 
       - Media:
           - Bazarr:

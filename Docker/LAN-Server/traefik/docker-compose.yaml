@@ -79,9 +79,9 @@ configs:
           openwrt:
             rule: "Host(`openwrt.ssankur.com`)"
             service: "openwrt"
-          pfsense:
-            rule: "Host(`pfsense.ssankur.com`)"
-            service: "pfsense"
+          opnsense:
+            rule: "Host(`opnsense.ssankur.com`)"
+            service: "opnsense"
           prowlarr:
             rule: "Host(`prowlarr.ssankur.com`)"
             service: "prowlarr"
@@ -188,7 +188,7 @@ configs:
             loadBalancer:
               servers:
                 - url: "https://10.1.1.254"
-          pfsense:
+          opnsense:
             loadBalancer:
               servers:
                 - url: "https://10.1.1.1"
